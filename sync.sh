@@ -1,6 +1,7 @@
 #!/bin/bash
 
 odrive=/root/.odrive-agent/bin/odrive
+rootdir=/odrive
 
 function error_exit() {
   echo $1 1>&2
@@ -12,13 +13,20 @@ function on_exit() {
   exit $exit_code
 }
 
-function sync() {
-  $odrive refresh "$1"
+function wait() {
+  while [ "$($odrive syncstate "$1" | head -n 1)" != 'Synced' ]
+  do
+    sleep 5
+  done
+}
+
+function recursive_sync() {
   find "$1" -name '*.cloud' -o -name '*.cloudf' | while read f
   do
     $odrive sync "$f"
+    wait "$f"
     if [ ${f##*.} = 'cloudf' ]; then
-      sync "${f%.*}"
+      recursive_sync "${f%.*}"
     fi
   done
 }
@@ -32,7 +40,13 @@ function main() {
     touch odrive.sync.enabled
   fi
 
-  sync /odrive
+  find $rootdir -type d | while read d
+  do
+    $odrive refresh "$d"
+    wait "$d"
+  done
+
+  recursive_sync $rootdir
 }
 
 main
