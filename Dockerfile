@@ -5,14 +5,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /root
+ARG userid=1000
+RUN useradd -u $userid -m odrive
+USER odrive
 
-RUN od=/root/.odrive-agent/bin \
+WORKDIR /home/odrive
+
+RUN od=.odrive-agent/bin \
   && curl -L https://dl.odrive.com/odrive-py --create-dirs -o $od/odrive.py \
   && curl -L https://dl.odrive.com/odriveagent-lnx-64 | tar -xvzf- -C $od/ \
   && curl -L https://dl.odrive.com/odrivecli-lnx-64 | tar -xvzf- -C $od/
 
-COPY sync.sh .
+COPY --chown=odrive:odrive sync.sh .
+RUN chmod +x sync.sh
 
 HEALTHCHECK --interval=10m \
             --timeout=10m \
@@ -20,4 +25,4 @@ HEALTHCHECK --interval=10m \
             --retries=1 \
   CMD /bin/bash sync.sh || exit 1
 
-ENTRYPOINT /root/.odrive-agent/bin/odriveagent
+ENTRYPOINT .odrive-agent/bin/odriveagent

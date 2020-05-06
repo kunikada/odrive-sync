@@ -4,7 +4,7 @@ sync odrive folders and files at regular intervals.
 
 ## Usage
 
-    $ docker run -v /local/path:/odrive -e AUTH_KEY=yourauthkey -d kunikada/odrive-sync
+    $ docker run -v /local/path:/home/odrive/data -e AUTH_KEY=yourauthkey -d kunikada/odrive-sync
 
 ### INTERVAL
 

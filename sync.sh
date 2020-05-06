@@ -1,7 +1,7 @@
 #!/bin/bash
 
-odrive=/root/.odrive-agent/bin/odrive
-rootdir=/odrive
+odrive=~/.odrive-agent/bin/odrive
+rootdir=/home/odrive/data
 
 function error_exit() {
   echo $1 1>&2
@@ -36,7 +36,7 @@ function main() {
 
   if [ ! -f odrive.sync.enabled ]; then
     $odrive authenticate $AUTH_KEY
-    $odrive mount /odrive /
+    $odrive mount $rootdir /
     touch odrive.sync.enabled
   fi
 
@@ -47,6 +47,7 @@ function main() {
   done
 
   recursive_sync $rootdir
+  $odrive emptytrash
 }
 
 main
